@@ -30,19 +30,8 @@
     session_start();
 
     $_SESSION['current_logged_user'] = $user;
-
-    if (isset ($_SESSION['userurl'])) {
-      //会话中有要跳转的页面
-      $url = $_SESSION['userurl'];
-    } else {
-      //没有要跳转的页面，则转到首页
-      $url = "index.php";
-    }
-
-      //0.5s后跳转
-    echo "<meta http-equiv=\"refresh\" content=\"0.5;url=$url\">";
-
-    header('Location: /admin/');
+   
+    header('Location: /admin/index.php');
 
 }
 
@@ -94,7 +83,7 @@
         var img = document.getElementById("img");
         img.src = this.responseText;
     })
-    xhr.open('GET','./yan.php?callback=' + value);
+    xhr.open('GET','./check.php?callback=' + value);
     xhr.send(null);
   }
   </script>
