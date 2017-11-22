@@ -11,8 +11,7 @@ if (empty($_GET['id'])) {
 $id = $_GET['id'];
 
 // 执行删除数据的语句
-// xiu_execute('delete from posts where id = ' . $id);
-xiu_execute('delete from posts where id in (' . $id . ');');
+ xiu_edit_result('delete from posts where id in (' . $id . ');');
 
 // 跳转回列表页
 // referer 的作用是用来标识这个请求是从哪个页面产生的
