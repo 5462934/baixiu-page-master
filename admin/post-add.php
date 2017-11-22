@@ -4,10 +4,11 @@
   require_once '../functions.php';
 
   xiu_session();
-
-$category = xiu_get_fetch_assoc('select * from categories;');
+  
+  $category = xiu_get_fetch_assoc('select * from categories;');
 
 function receive_form () {
+  // 校验表单是否完整
   if(empty($_POST['title'])
     || empty($_POST['content'])
     || empty($_POST['slug'])
@@ -17,34 +18,39 @@ function receive_form () {
     $GLOBALS['error_msg'] = '请完整填写信息';
     return;
   }
-// 判断上传图片=========================
-// 上传图片类型
-  // $allow_img = array('image/png', 'image/jpeg', 'image/gif');
-  // if(!array_search($_FILES['feature']['type'],$allow_img)){
-  //   $GLOBALS['error_msg'] = '上传图片类型错误';
-  //   return;
-  // }
-// 设置上传图片路径
-// 图片名称
-  $feature_name = $_FILES['feature']['tmp_name'];
-  $img_lujing = './../static/uploads/' . $_FILES['feature']['name'];
-  $feature = substr($img_lujing, 4);
-  $move_uploaded_file = move_uploaded_file($feature_name, $img_lujing);
-  if(!$move_uploaded_file) {
+
+// 特色图像校验
+  if (!(isset($_FILES['feature']) && $_FILES['feature']['error'] === UPLOAD_ERR_OK)) {
     $GLOBALS['error_msg'] = '上传图片失败';
     return;
   }
+  if(empty($_FILES['feature']['error'])) {
+     $temp_file = $_FILES['feature']['tmp_name'];
+     $target_file = 'C:/Users/lenovo/Documents/GitHub/baixiu-page-master/static/uploads' . $_FILES['feature']['name'];
+  
+    if(move_uploaded_file($temp_file, $target_file)) {
+      $image_file = 'C:/Users/lenovo/Documents/GitHub/baixiu-page-master/static/uploads' . $_FILES['feature']['name'];
+    }
+  }
 // 获取临时数据
+  $feature = isset($image_file) ? $image_file : '';
   $title = $_POST['title'];
+  $created = $_POST['created'];
   $content = $_POST['content'];
   $slug = $_POST['slug'];
   $category_id = $_POST['category'];
-  $created = $_POST['created'];
   $status = $_POST['status'];
 
 // 添加到posts数据库中
-  xiu_edit_result("insert into posts values (null, '{$slug}', '{$title}', '{$feature}', '{$created}', '{$content}', 11, 11, '{$status}', 1,{ $category_id})");
+ $affected_rows = xiu_edit_result("insert into posts values (null, '{$slug}', '{$title}', '{$feature}', '{$created}', '{$content}', 11, 11, '{$status}', 1,'{$category_id}')");
+
+  if ($affected_rows === 1) {
+    $GLOBALS['success'] = '添加成功';
+  }
+
 }
+
+
 
 if($_SERVER['REQUEST_METHOD'] === 'POST') {
   receive_form();
@@ -59,6 +65,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link rel="stylesheet" href="/static/assets/vendors/font-awesome/css/font-awesome.css">
   <link rel="stylesheet" href="/static/assets/vendors/nprogress/nprogress.css">
   <link rel="stylesheet" href="/static/assets/css/admin.css">
+   <link rel="stylesheet" href="/static/assets/vendors/simplemde/simplemde.min.css">
+   <script src="/static/assets/vendors/simplemde/simplemde.min.js"></script>
   <script src="/static/assets/vendors/nprogress/nprogress.js"></script>
 </head>
 <body>
@@ -73,10 +81,10 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
       <!-- 有错误信息时展示 -->
       <?php if(isset($error_msg)) { ?>
       <div class="alert alert-danger">
-        <strong>错误！</strong>发生XXX错误 <?php echo $error_msg; ?>
+        <strong>错误！</strong> <?php echo $error_msg; ?>
       </div>
        <?php } ?>
-      <form class="row" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
+      <form class="row" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" enctype="multipart/form-data">
         <div class="col-md-9">
           <div class="form-group">
             <label for="title">标题</label>
@@ -84,8 +92,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
           </div>
           <div class="form-group">
             <label for="content">内容</label>
-            <script id="content" name="content" type="text/javascript">
-            </script>
+            <div class="form-group">
+              <textarea id="fieldTest" name="content" cols="30" rows="10"></textarea>
+            </div>
           </div>
         </div>
         <div class="col-md-3">
@@ -98,7 +107,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="feature">特色图像</label>
             <!-- show when image chose -->
             <img id="preview" class="help-block thumbnail" style="display: none">
-            <input id="feature" class="form-control" name="feature" type="file" accept=image/*>
+            <input id="feature" class="form-control" name="feature" type="file">
           </div>
           <div class="form-group">
             <label for="category">所属分类</label>
@@ -133,13 +142,15 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <script src="/static/assets/vendors/jquery/jquery.js"></script>
   <script src="/static/assets/vendors/bootstrap/js/bootstrap.js"></script>
-  <script src="/static/assets/vendors/ueditor/ueditor.config.js"></script>
-  <script src="/static/assets/vendors/ueditor/ueditor.all.js"></script>
   <script src="/static/assets/vendors/moment/moment.js"></script>
   <script type="text/javascript">
 
   $(function ($) {
-    UE.getEditor('content');
+    var simplemde = new SimpleMDE({
+        element: document.getElementById("fieldTest"),
+        autoDownloadFontAwesome: false,
+        status: false
+    });
 
     $('#feature').on('change', function () {
       if(!this.files.length) return;

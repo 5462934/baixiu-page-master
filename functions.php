@@ -34,7 +34,8 @@ function mysqli_conn () {
 function xiu_get_fetch_assoc ($sql) {
 
     $conn = mysqli_conn();
-
+    // 设置编码格式
+    mysqli_query($conn,"set names 'utf8' ");
     $query = mysqli_query($conn, $sql);
 
     if(!$query) {
@@ -71,7 +72,8 @@ function xiu_fetch_one ($sql) {
 
 function xiu_edit_result ($sql) {
   $conn = mysqli_conn();
-
+  // 设置编码格式
+    mysqli_query($conn,"set names 'utf8' ");
   $query = mysqli_query($conn, $sql);
 
   if(!$query){
