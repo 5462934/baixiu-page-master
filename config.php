@@ -11,4 +11,4 @@ define('DB_USER', 'root');
 
 define('DB_PASS', 'linawei');
 
-define('DB_NAME', 'baixiu-master');
+define('DB_NAME', 'baixiu-dev');
