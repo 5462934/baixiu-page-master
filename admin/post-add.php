@@ -19,7 +19,7 @@ function receive_form () {
     return;
   }
 
-// 特色图像校验
+  // 特色图像校验
   if (!(isset($_FILES['feature']) && $_FILES['feature']['error'] === UPLOAD_ERR_OK)) {
     $GLOBALS['error_msg'] = '上传图片失败';
     return;

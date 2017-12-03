@@ -66,13 +66,13 @@
       <td>{{: content }}</td>
       <td>《{{: post_title }}》</td>
       <td>{{: created }}</td>
-      <td>{{: status === 'approved' ? '已批准' : status === 'held' ? '待审' : '拒绝' }}</td>
+      <td>{{: status === 'held' ? '待审' : status === 'rejected' ? '拒绝' : '准许' }}</td>
       <td class="text-center">
         {{if status === 'held'}}
-          <a href="javascript:;" data-status={{: status}} class="btn btn-info btn-xs btn-edit">批准</a>
-          <a href="javascript:;" data-status={{: status}}  class="btn btn-warning btn-xs">驳回</a>
+          <a href="javascript:;" data-status="approved" class="btn btn-info btn-xs btn-edit">批准</a>
+          <a href="javascript:;" data-status="rejected" class="btn btn-warning btn-xs btn-edit">拒绝</a>
         {{/if}}
-        <a href="javascript:;" data-status={{: status}}  class="btn btn-danger btn-xs">删除</a>
+        <a href="javascript:;" class="btn btn-danger btn-xs btn-delete">删除</a>
       </td>
     </tr>
    {{/for}}
@@ -86,6 +86,14 @@
 
   <script>
     $(function () {
+      var $tbody = $('tbody');
+      var $th = $('th:first-child');
+      var $btnBatch = $('.btn-batch');
+
+       // 选中项集合
+      var checkedItems = []
+
+
       var currentPage = 1;
 
       // 发送ajax加载指定页吗对应的的数据
@@ -120,10 +128,10 @@
        var defOptions = {
         totalPages: 100,
         startPaeg: startPage,
-        first: '«',
-        prev: '←',
-        next: '→',
-        last: '»',
+        first: '首页',
+        prev: '上一页',
+        next: '下一页',
+        last: '尾页',
         visiablePages: 5,
         onPageClick: function (e, page) {
           // 页码变，数据变
@@ -131,9 +139,67 @@
         }
       }
       // twbsPagination 的作用就是在指定元素上呈现一个分页组件
-      $('#pagination').twbsPagination(defOptions)
+      $('#pagination').twbsPagination(defOptions);
+      
+
+      // ===========================================
+      // 批量操作按钮
+      $tbody.on('change', 'td > input[type=checkbox]', function () {
+        var id = parseInt($(this).parent().parent().data('id'));
+        if ($(this).prop('checked')) {
+          checkedItems.push(id)
+        } else {
+          checkedItems.splice(checkedItems.indexOf(id), 1)
+        }
+        checkedItems.length ? $btnBatch.fadeIn() : $btnBatch.fadeOut()
+      })
+      // 全选按钮
+      $('th > input[type=checkbox]').on('change', function () {
+        var checked = $(this).prop('checked');
+        $('td > input[type=checkbox]').prop('checked', checked).trigger('change');
+      })
+    
+      // 删除评论
+      $tbody.on('click', '.btn-delete', function () {
+        var tr = $(this).parent().parent();
+
+        var id = parseInt($(this).parent().parent().data('id'));
+
+        $.get('/admin/comment-delete.php', {
+          id: id
+        }, function (res) {
+          res.success && loadData();
+        })
+      })
+      // 修改评论状态
+      $tbody.on('click', '.btn-edit', function () {
+        var id = parseInt($(this).parent().parent().data('id'))
+        var status = $(this).data('status')
+        $.post('/admin/comment-status.php?id=' + id, { status: status }, function (res) {
+          res.success && loadData()
+        })
+      })
+
+      // 批量操作
+      $btnBatch
+      .on('click', '.btn-info', function () {
+        $.post('/admin/comment-status.php?id=' + checkedItems.join(','),{
+          status: 'approved'
+        }, function (res) {
+          res.success && loadData();
+        })
+      })
+      .on('click', '.btn-warning', function () {
+          $.post('/admin/comment-status.php?id=' + checkedItems.join(','), { status: 'rejected' }, function (res) {
+            res.success && loadData()
+          })
+      })
+      .on('click', '.btn-danger', function () {
+          $.post('/admin/comment-delete.php?id=' + checkedItems.join(','), function (res) {
+            res.success && loadData()
+          })
+      })
     })
-  
   </script>
 </body>
 </html>
