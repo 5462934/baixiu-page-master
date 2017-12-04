@@ -20,18 +20,16 @@ function receive_form () {
   }
 
   // 特色图像校验
-  if (!(isset($_FILES['feature']) && $_FILES['feature']['error'] === UPLOAD_ERR_OK)) {
-    $GLOBALS['error_msg'] = '上传图片失败';
-    return;
-  }
-  if(empty($_FILES['feature']['error'])) {
-     $temp_file = $_FILES['feature']['tmp_name'];
-     $target_file = 'C:/Users/lenovo/Documents/GitHub/baixiu-page-master/static/uploads' . $_FILES['feature']['name'];
-  
-    if(move_uploaded_file($temp_file, $target_file)) {
-      $image_file = 'C:/Users/lenovo/Documents/GitHub/baixiu-page-master/static/uploads' . $_FILES['feature']['name'];
+  if (empty($_FILES['feature']['error'])) {
+    $templ_file = $_FILES['feature']['tmp_name'];
+
+    // 文件上传路径
+    $target_file = '../static/uploads/'. $_FILES['feature']['name'];
+    if (move_uploaded_file($temp_file, $target_file)) {
+      $image_file = '/static/uploads/'. $_FILES['feature']['name'];
     }
   }
+  //============================================
 // 获取临时数据
   $feature = isset($image_file) ? $image_file : '';
   $title = $_POST['title'];

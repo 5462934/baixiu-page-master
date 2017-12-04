@@ -11,20 +11,7 @@
       $GLOBALS['error_msg'] = '请完整填写个人信息，以便添加';
       return;
     }
-    var_dump($_FILES['avatar']);
     // 验证图片上传信息
-
-    if($_FILES['avatar']['error'] !== UPLOAD_ERR_OK){
-        $GLOBALS['error_msg'] = '图片上传失败';
-        return;
-    }
-
-    // 允许图片上传类型
-    $allow_avatar_type = array('image/jpeg', 'image/png', 'image/gif');
-    if(!in_array($_FILES['avatar']['type'], $allow_avatar_type)){
-      $GLOBALS['error_msg'] = '上传图片类型错误';
-      return;
-    }
     $avatar_name = $_FILES['avatar']['tmp_name'];
     $upload_avatar = './../static/uploads/'.$_FILES['avatar']['name'];
     $avatar = substr($upload_avatar, 1);
