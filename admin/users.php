@@ -11,16 +11,20 @@
       $GLOBALS['error_msg'] = '请完整填写个人信息，以便添加';
       return;
     }
+    var_dump($_FILES['avatar']);
     // 验证图片上传信息
-    $avatar_name = $_FILES['avatar']['tmp_name'];
-    $upload_avatar = './../static/uploads/'.$_FILES['avatar']['name'];
-    $avatar = substr($upload_avatar, 1);
-    $move_avatar_file = move_uploaded_file($avatar_name, $avatar);
 
-    if(!$move_avatar_file){
-      $GLOBALS['error_msg'] = '移动头像文件失败';
-      return;
+    if(empty($_FILES['avatar']['error'])){
+
+      $avatar_name = $_FILES['avatar']['tmp_name'];
+      $upload_avatar = '../static/uploads/'.$_FILES['avatar']['name'];
+      if (move_uploaded_file($avatar_name, $upload_avatar)) {
+        $image_file = '/static/uploads/' .$_FILES['avatar']['name'];
+      }
     }
+    
+    
+  
 
     // 保存临时信息
     $email = $_POST['email'];
@@ -32,7 +36,7 @@
     // $email_style = /^\w+@\w+\.\w+(\.\w+)?$/;
 
     // 添加数据到users数据库
-     xiu_edit_result("insert into users  (slug, email, password, nickname, avatar status) values ('{$slug}', '{$email}', '{$password}', '{$nickname}', '{$avatar}' , 'activated');");
+     xiu_edit_result("insert into users  (slug, email, password, nickname, avatar, status) values ('{$slug}', '{$email}', '{$password}', '{$nickname}', '{$image_file}' , 'activated');");
   }
 
   function post_edit () {
@@ -94,7 +98,7 @@
       <?php endif; ?>
       <div class="row">
         <div class="col-md-4">
-          <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
+          <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" enctype="multipart/form-data">
             <h2>添加新用户</h2>
             <input type="hidden" name="id" id="ids" value="0">
             <div class="form-group">
